@@ -1,0 +1,179 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-canvas: #F4F4F0;
+    --border-ink: #000000;
+    --ink-primary: #0A0A0A;
+  }
+
+  body {
+    background-color: var(--bg-canvas);
+    color: var(--ink-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
+  }
+
+  code, pre, .font-mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+}
+
+/* Hard modern brutalist shadows */
+.brutalist-border {
+  border: 2.5px solid #000000;
+}
+
+.brutalist-border-thick {
+  border: 3.5px solid #000000;
+}
+
+.brutalist-shadow-sm {
+  box-shadow: 3px 3px 0px #000000;
+}
+
+.brutalist-shadow {
+  box-shadow: 5px 5px 0px #000000;
+}
+
+.brutalist-shadow-lg {
+  box-shadow: 8px 8px 0px #000000;
+}
+
+.brutalist-shadow-xl {
+  box-shadow: 12px 12px 0px #000000;
+}
+
+.brutalist-btn {
+  border: 2.5px solid #000000;
+  box-shadow: 4px 4px 0px #000000;
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.brutalist-btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0px #000000;
+}
+
+.brutalist-btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0px #000000;
+}
+
+/* X-Ray Laser Scan Animation */
+@keyframes scanLaser {
+  0% {
+    transform: translateY(0%);
+    opacity: 0.9;
+  }
+  50% {
+    transform: translateY(420px);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0%);
+    opacity: 0.9;
+  }
+}
+
+@keyframes scanline {
+  0% {
+    top: 0%;
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0.95;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+}
+
+/* Expanding Heatmap Bloom */
+@keyframes heat-bloom {
+  0% {
+    transform: translate(-50%, -50%) scale(0.2);
+    opacity: 0;
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.08);
+    opacity: 0.95;
+  }
+  100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0.88;
+  }
+}
+
+.animate-heat-bloom {
+  animation: heat-bloom 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Box drawing outline animation */
+@keyframes draw-box {
+  0% {
+    clip-path: polygon(0 0, 0 0, 0 0, 0 0);
+    opacity: 0;
+  }
+  100% {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    opacity: 1;
+  }
+}
+
+.animate-draw-box {
+  animation: draw-box 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Custom crisp brutalist scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #E5E5DE;
+  border-left: 2px solid #000;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #000000;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2563EB;
+}
+
+/* Print and PDF generation rules */
+@page {
+  size: A4 portrait;
+  margin: 10mm;
+}
+
+@media print {
+  html, body {
+    background-color: #FFFFFF !important;
+    color: #000000 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+  header, footer, nav, .no-print {
+    display: none !important;
+  }
+  .print-only {
+    display: block !important;
+  }
+  .page-break {
+    page-break-before: always;
+  }
+}

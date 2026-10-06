@@ -1,0 +1,372 @@
+import React, { useState } from 'react';
+import { Printer, Download, X, AlertTriangle, ShieldCheck, HelpCircle, Activity, CheckCircle2, FileText } from 'lucide-react';
+import { AnalysisData } from '../types';
+import { XrayCanvas } from './XrayCanvas';
+import { downloadAnalysisPdf } from '../utils/pdfExport';
+
+interface PrintableReportModalProps {
+  analysis: AnalysisData;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export const PrintableReportModal: React.FC<PrintableReportModalProps> = ({
+  analysis,
+  isOpen,
+  onClose,
+}) => {
+  const [isExportingPdf, setIsExportingPdf] = useState(false);
+
+  if (!isOpen) return null;
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleDownloadPdf = async () => {
+    setIsExportingPdf(true);
+    try {
+      await downloadAnalysisPdf(analysis, 'printable-report-content');
+    } catch (err) {
+      console.error('PDF export error:', err);
+    } finally {
+      setIsExportingPdf(false);
+    }
+  };
+
+  const isHigh = analysis.confidenceCategory === 'higher';
+  const isModerate = analysis.confidenceCategory === 'moderate';
+
+  const badgeColor = isHigh
+    ? 'bg-rose-500 text-white border-black'
+    : isModerate
+    ? 'bg-amber-400 text-black border-black'
+    : 'bg-emerald-400 text-black border-black';
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-y-auto bg-black/85 backdrop-blur-sm flex justify-center items-start p-3 sm:p-6 print:p-0 print:bg-white print:static print:block animate-in fade-in duration-200">
+      {/* Modal Container */}
+      <div className="bg-white rounded-2xl border-2 border-black shadow-[6px_6px_0px_#000] w-full max-w-4xl my-4 sm:my-8 print:border-none print:shadow-none print:rounded-none print:my-0 print:max-w-none text-black flex flex-col">
+        {/* Sticky Top Control Bar (Hidden when printing or exporting) */}
+        <div
+          data-html2canvas-ignore="true"
+          className="sticky top-0 z-30 p-3.5 sm:p-4 bg-black text-white flex flex-wrap items-center justify-between gap-3 border-b-2 border-black print:hidden rounded-t-2xl"
+        >
+          <div className="flex items-center gap-2">
+            <FileText className="w-4 h-4 text-cyan-400" />
+            <span className="font-mono text-xs font-black tracking-wider uppercase">
+              FINDPNEUMO OFFICIAL PATIENT CLINICAL REPORT
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Download A4 PDF Button */}
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isExportingPdf}
+              className="px-3.5 py-1.5 rounded-lg bg-cyan-400 text-black font-mono text-xs font-black hover:bg-cyan-300 transition-all border-2 border-black shadow-[2px_2px_0px_#FFF] flex items-center gap-1.5 disabled:opacity-50 cursor-pointer uppercase"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>{isExportingPdf ? 'GENERATING A4 PDF...' : 'DOWNLOAD A4 PDF'}</span>
+            </button>
+
+            {/* Print Report Button */}
+            <button
+              onClick={handlePrint}
+              className="px-3.5 py-1.5 rounded-lg bg-white text-black font-mono text-xs font-black hover:bg-slate-200 transition-all border-2 border-black shadow-[2px_2px_0px_#FFF] flex items-center gap-1.5 cursor-pointer uppercase"
+            >
+              <Printer className="w-3.5 h-3.5" />
+              <span>PRINT REPORT</span>
+            </button>
+
+            {/* Close Button */}
+            <button
+              onClick={onClose}
+              title="Close Report View"
+              className="p-1.5 rounded-lg text-slate-300 hover:text-white hover:bg-neutral-800 transition-colors border border-white/20 cursor-pointer ml-1"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+
+        {/* Printable Document Paper Area (1:1 Exact Match with A4 PDF Output) */}
+        <div
+          id="printable-report-content"
+          className="p-6 sm:p-10 space-y-8 print:p-4 text-black bg-white w-full"
+        >
+          {/* Document Header */}
+          <div className="border-b-2 border-black pb-6 flex flex-col sm:flex-row sm:items-start justify-between gap-6">
+            <div>
+              <div className="flex items-center gap-2 mb-1.5">
+                <span className="px-2.5 py-0.5 rounded bg-black text-white font-mono text-xs font-black uppercase">
+                  FINDPNEUMO
+                </span>
+                <span className="font-mono text-xs text-[#52525B] font-black uppercase">
+                  CLINICAL SCREENING REPORT
+                </span>
+              </div>
+              <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-black uppercase">
+                Chest Radiograph Analysis Summary
+              </h1>
+              <p className="text-xs font-mono text-[#52525B] mt-1 font-semibold">
+                Generated by Team LowIQBots Screening Engine · Model v2026.4
+              </p>
+            </div>
+
+            {/* Patient & Case Reference Block */}
+            <div className="bg-[#F8F8F5] rounded-xl p-4 border-2 border-black text-xs font-mono space-y-1 sm:text-right min-w-[240px] shadow-[2px_2px_0px_#000]">
+              <div>
+                <span className="text-[#52525B]">RECORD ID: </span>
+                <strong className="text-black">{analysis.id}</strong>
+              </div>
+              <div>
+                <span className="text-[#52525B]">PATIENT REF: </span>
+                <strong className="text-black">{analysis.patientRef}</strong>
+              </div>
+              <div>
+                <span className="text-[#52525B]">PROJECTION: </span>
+                <strong className="text-black">{analysis.projection}</strong>
+              </div>
+              <div>
+                <span className="text-[#52525B]">TIMESTAMP: </span>
+                <span className="text-black font-semibold">{analysis.timestamp}</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Primary Result Callout */}
+          <div className="p-6 bg-[#F8F8F5] rounded-xl border-2 border-black flex flex-col sm:flex-row sm:items-center justify-between gap-6 shadow-[3px_3px_0px_#000]">
+            <div className="space-y-2">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#52525B] font-black">
+                PRIMARY MODEL INFERENCE
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-black text-black tracking-tight uppercase">
+                {analysis.resultHeadline}
+              </h2>
+              <p className="text-sm text-[#383B40] max-w-xl font-medium leading-relaxed">
+                {analysis.editorialSummary}
+              </p>
+            </div>
+
+            <div className="flex flex-col sm:items-end shrink-0">
+              <div
+                className={`px-4 py-2 rounded-lg border-2 text-center font-mono font-black text-sm uppercase shadow-[2px_2px_0px_#000] ${badgeColor}`}
+              >
+                {analysis.overallConfidence}% CERTAINTY
+              </div>
+              <span className="text-[11px] font-mono text-[#52525B] mt-1.5 font-bold uppercase">
+                STATUS: {analysis.resultStatus.toUpperCase()}
+              </span>
+            </div>
+          </div>
+
+          {/* Multi-Representation Radiograph Quad (4 Comparative Plates) */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between border-b-2 border-black pb-2 text-xs font-mono">
+              <span className="font-black uppercase">
+                RADIOGRAPHIC MODALITY SERIES (4 SYNCHRONIZED PLATES)
+              </span>
+              <span className="text-[#52525B] font-bold">1:1 SPATIAL REGISTRATION</span>
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              {/* Plate 1: Original */}
+              <div className="border-2 border-black rounded-xl p-2.5 bg-[#F8F8F5] space-y-2 shadow-[2px_2px_0px_#000]">
+                <div className="flex items-center justify-between text-[10px] font-mono font-black">
+                  <span>1. UNTOUCHED</span>
+                  <span className="text-[#52525B]">BASE PA</span>
+                </div>
+                <div className="aspect-square rounded-lg border border-black overflow-hidden bg-black">
+                  <XrayCanvas
+                    analysis={analysis}
+                    activeView="original"
+                    camera={{ x: 50, y: 50, zoom: 1 }}
+                    showScanline={false}
+                    showGrid={false}
+                    interactive={false}
+                    className="w-full h-full border-none shadow-none"
+                  />
+                </div>
+              </div>
+
+              {/* Plate 2: Heatmap Only */}
+              <div className="border-2 border-black rounded-xl p-2.5 bg-[#F8F8F5] space-y-2 shadow-[2px_2px_0px_#000]">
+                <div className="flex items-center justify-between text-[10px] font-mono font-black">
+                  <span>2. HEATMAP</span>
+                  <span className="text-[#0E7490]">GRAD-CAM</span>
+                </div>
+                <div className="aspect-square rounded-lg border border-black overflow-hidden bg-black">
+                  <XrayCanvas
+                    analysis={analysis}
+                    activeView="attention"
+                    camera={{ x: 50, y: 50, zoom: 1 }}
+                    showScanline={false}
+                    showGrid={false}
+                    interactive={false}
+                    className="w-full h-full border-none shadow-none"
+                  />
+                </div>
+              </div>
+
+              {/* Plate 3: Boxed Findings */}
+              <div className="border-2 border-black rounded-xl p-2.5 bg-[#F8F8F5] space-y-2 shadow-[2px_2px_0px_#000]">
+                <div className="flex items-center justify-between text-[10px] font-mono font-black">
+                  <span>3. BOXED</span>
+                  <span className="text-rose-700">RETICLES</span>
+                </div>
+                <div className="aspect-square rounded-lg border border-black overflow-hidden bg-black">
+                  <XrayCanvas
+                    analysis={analysis}
+                    activeView="boxed"
+                    camera={{ x: 50, y: 50, zoom: 1 }}
+                    showScanline={false}
+                    showGrid={false}
+                    interactive={false}
+                    className="w-full h-full border-none shadow-none"
+                  />
+                </div>
+              </div>
+
+              {/* Plate 4: Combined View */}
+              <div className="border-2 border-black rounded-xl p-2.5 bg-[#F8F8F5] space-y-2 shadow-[2px_2px_0px_#000]">
+                <div className="flex items-center justify-between text-[10px] font-mono font-black">
+                  <span>4. COMBINED</span>
+                  <span className="text-emerald-700">FUSION</span>
+                </div>
+                <div className="aspect-square rounded-lg border border-black overflow-hidden bg-black">
+                  <XrayCanvas
+                    analysis={analysis}
+                    activeView="all"
+                    camera={{ x: 50, y: 50, zoom: 1 }}
+                    showScanline={false}
+                    showGrid={false}
+                    interactive={false}
+                    className="w-full h-full border-none shadow-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Deep Findings Table */}
+          <div className="space-y-4 pt-2">
+            <div className="flex items-center justify-between border-b-2 border-black pb-2 text-xs font-mono">
+              <span className="font-black uppercase">
+                DETAILED REGIONAL FINDINGS ({analysis.findings.length} IDENTIFIED)
+              </span>
+              <span className="text-[#52525B] font-bold">SORTED BY CERTAINTY</span>
+            </div>
+
+            <div className="space-y-4">
+              {analysis.findings.map((f, idx) => (
+                <div key={f.id} className="p-4 rounded-xl border-2 border-black bg-[#F8F8F5] space-y-2 shadow-[2px_2px_0px_#000]">
+                  <div className="flex flex-wrap items-center justify-between gap-2 border-b border-black/20 pb-2">
+                    <div className="flex items-center gap-2">
+                      <span className="px-2 py-0.5 rounded bg-black text-white font-mono text-xs font-black">
+                        FINDING 0{idx + 1}
+                      </span>
+                      <strong className="text-sm font-black text-black uppercase">{f.title}</strong>
+                    </div>
+
+                    <div className="flex items-center gap-3 text-xs font-mono">
+                      <span className="text-[#52525B]">REGION: {f.anatomicalRegion}</span>
+                      <span className="px-2 py-0.5 rounded bg-black text-white font-black text-amber-300">
+                        {f.confidence}% CERTAINTY
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs font-medium text-[#2B2D32]">
+                    <div>
+                      <strong className="text-black block mb-0.5 font-mono text-[11px] uppercase">
+                        Patient Explanation:
+                      </strong>
+                      <p className="leading-relaxed">{f.patientExplanation}</p>
+                    </div>
+
+                    <div className="border-t md:border-t-0 md:border-l border-black/20 md:pl-4 pt-2 md:pt-0">
+                      <strong className="text-black block mb-0.5 font-mono text-[11px] uppercase">
+                        Recommended Doctor Question:
+                      </strong>
+                      <p className="italic text-[#0E7490] leading-relaxed">
+                        "{f.physicianQuestion}"
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Consultation Checklist */}
+          <div className="p-5 rounded-xl border-2 border-black bg-white space-y-3 shadow-[2px_2px_0px_#000]">
+            <span className="text-xs font-mono font-black text-black uppercase block border-b-2 border-black pb-1.5">
+              CHECKLIST: PREPARING FOR YOUR CLINICAL CONSULTATION
+            </span>
+            <ul className="text-xs space-y-2 text-[#383B40] font-medium">
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#0E7490] shrink-0 mt-0.5" />
+                <span>
+                  Share whether you have had a fever above 38°C (100.4°F), productive phlegm, or sudden shortness of breath.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#0E7490] shrink-0 mt-0.5" />
+                <span>
+                  Ask your physician to auscultate the specific region noted in Finding 01 with a stethoscope.
+                </span>
+              </li>
+              <li className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-[#0E7490] shrink-0 mt-0.5" />
+                <span>
+                  Bring any previous chest X-rays you may have had for comparison of lung parenchymal changes over time.
+                </span>
+              </li>
+            </ul>
+          </div>
+
+          {/* Bottom Action Strip inside the report for convenient downloading (Ignored during PDF capture) */}
+          <div
+            data-html2canvas-ignore="true"
+            className="p-4 rounded-xl border-2 border-black bg-[#F8F8F5] flex flex-wrap items-center justify-between gap-3 print:hidden"
+          >
+            <span className="text-xs font-mono text-[#52525B] font-semibold">
+              Ready to take this report to your appointment?
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleDownloadPdf}
+                disabled={isExportingPdf}
+                className="px-4 py-2 rounded-lg bg-cyan-400 text-black font-mono text-xs font-black hover:bg-cyan-300 transition-all border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 disabled:opacity-50 cursor-pointer uppercase"
+              >
+                <Download className="w-3.5 h-3.5" />
+                <span>{isExportingPdf ? 'GENERATING A4 PDF...' : 'DOWNLOAD A4 PDF'}</span>
+              </button>
+              <button
+                onClick={handlePrint}
+                className="px-4 py-2 rounded-lg bg-white text-black font-mono text-xs font-black hover:bg-neutral-200 transition-all border-2 border-black shadow-[2px_2px_0px_#000] flex items-center gap-1.5 cursor-pointer uppercase"
+              >
+                <Printer className="w-3.5 h-3.5" />
+                <span>PRINT REPORT</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Legal and Safety Disclaimer */}
+          <div className="border-t-2 border-black pt-4 text-[10px] font-mono text-[#52525B] space-y-1">
+            <strong className="text-black font-bold uppercase block">
+              CLINICAL DISCLAIMER & SAFETY NOTICE:
+            </strong>
+            <p className="leading-relaxed">
+              FindPneumo is an AI-assisted screening platform designed exclusively to aid interpretation and patient comprehension. It does not provide an official medical diagnosis, treatment prescription, or replace clinical auscultation by a licensed medical practitioner.
+            </p>
+            <p className="font-bold text-black pt-1">
+              Team LowIQBots (Akhilesh, Kshitija, Gouri, Shruti) · Model v2026.4
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};

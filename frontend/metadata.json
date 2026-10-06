@@ -1,0 +1,6 @@
+{
+  "name": "PneumoScan — AI-Assisted Chest X-Ray Analysis",
+  "description": "Patient-facing clinical screening interface for AI-assisted chest radiograph evaluation, Grad-CAM attention inspection, and transparent confidence analysis.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
